@@ -13,10 +13,10 @@ distribution shift without retraining from scratch. A language model is optional
 and sits outside the perception loop: it reasons over the world model through an
 MCP interface, not inside it.
 
-The central bet is that fast, grounded, continually-adapting world models are a
-better substrate for computer agents than calling a large language model at every
-step. The repository is the evidence for and against that bet, including the
-experiments that failed.
+The working hypothesis was that a fast, grounded, continually-adapting world model
+could carry the perception and action loop, with a language model called only when
+needed. The repository records the evidence for and against that hypothesis,
+including the experiments that failed.
 
 ```
 Perceive → Encode → Predict → Surprise → Verify → Learn → Act
@@ -42,9 +42,9 @@ paper.
 
 ## Why this exists
 
-Most "computer use" agents are LLM wrappers: screenshot → caption → token stream →
-action. That path is slow, lossy, and expensive, and it re-derives the same physics
-on every step.
+Many "computer use" agents are LLM wrappers: screenshot → caption → token stream →
+action. That path is often slow, lossy, and expensive, and it re-derives the same
+physics on every step.
 
 Proteus takes the opposite approach:
 
@@ -88,26 +88,26 @@ ScreenCaptureKit, FSEvents, and NSWorkspace paths are macOS-specific.
 
 ---
 
-## Headline results
+## Results
 
-These are the numbers the repository argues about. Each links to the note that
-contains the protocol and the caveats.
+Each result links to the experiment that produced it, with its protocol and
+caveats.
 
-| Claim | Measured result | Evidence |
+| Result | Measurement | Evidence |
 |---|---|---|
-| Latent dynamics learn | macro MSE **0.0063** vs **1.18** random floor | `proteus/eval/run_evals.py`; `docs/research/FINDINGS.md` |
-| Hierarchical planning beats flat MPC | **8/8** vs **0/8** success on a 36-file task; **72** vs **178,176** rollouts | `docs/research/P31_HIERARCHICAL.md` |
-| Le-Gates reduces forgetting | old-domain drift **+169%** vs **+1015%** for naive fine-tuning; new-domain MSE **−26%** | `docs/research/GATES.md` |
-| Growable latent adds types without forgetting | old MSE **0.0025 → 0.0026**, new-type MSE **−60%**, growth perturbation **0.0000** | `docs/research/GROWABLE.md` |
-| Lifelong routing is stable | 3 sequential shifts, **6/6** routing diagonal, zero backward drift | `docs/research/WO1_LIFELONG.md` |
-| Barrier certifies KEEP under all gates | **0** violations vs **104** unprojected, margin ≈ **3.0** | `docs/research/P33_BARRIER.md` |
-| Latent communication prevents loss | **1.000** safe vs **0.367** for the no-communication agent; binding accuracy **0.711–1.000** depending on view split | `docs/research/PROOF.md`, `docs/research/BREAKTHROUGH.md` |
-| Vision is fast and aligned | ResNet18 **3.1 ms**, cosine **0.997** (ViT-B/16: 10.6 ms, 0.985) | `docs/research/BENCH_ENCODERS.md` |
-| Exact counts from pixels | **131/150 (87%)** exact, mean abs error ≈ **0.2** | `docs/research/COUNT_HEAD.md` |
-| Decision path is tiny | **14.5 µs/file**, **0.15 MB** TorchScript model | `docs/research/P34_LATENCY.md` |
-| Chaos suite preserves KEEP | 4/4 adversarial tests, **0** KEEP files lost | `docs/research/WO3_CHAOS.md` |
+| Latent dynamics | macro MSE **0.0063** vs **1.18** random floor | `proteus/eval/run_evals.py`; `docs/research/FINDINGS.md` |
+| Hierarchical vs flat planning | **8/8** vs **0/8** success on a 36-file task; **72** vs **178,176** rollouts | `docs/research/P31_HIERARCHICAL.md` |
+| Le-Gates vs naive fine-tuning | old-domain drift **+169%** vs **+1015%**; new-domain MSE **−26%** | `docs/research/GATES.md` |
+| Growable latent | old MSE **0.0025 → 0.0026**, new-type MSE **−60%**, growth perturbation **0.0000** | `docs/research/GROWABLE.md` |
+| Lifelong routing | 3 sequential shifts, **6/6** routing diagonal, zero backward drift | `docs/research/WO1_LIFELONG.md` |
+| Barrier certificate | **0** violations vs **104** unprojected, margin ≈ **3.0** | `docs/research/P33_BARRIER.md` |
+| Latent communication | **1.000** safe vs **0.367** for the no-communication agent; binding accuracy **0.711–1.000** depending on view split | `docs/research/PROOF.md`, `docs/research/BREAKTHROUGH.md` |
+| Frozen vision encoder | ResNet18 **3.1 ms**, cosine **0.997** (ViT-B/16: 10.6 ms, 0.985) | `docs/research/BENCH_ENCODERS.md` |
+| Count head | **131/150 (87%)** exact, mean abs error ≈ **0.2** | `docs/research/COUNT_HEAD.md` |
+| Decision path | **14.5 µs/file**, **0.15 MB** TorchScript model | `docs/research/P34_LATENCY.md` |
+| Chaos suite | 4/4 adversarial tests, **0** KEEP files lost | `docs/research/WO3_CHAOS.md` |
 
-Fresh reproduction on 2026-10-28 (quick budgets, with the local checkpoints):
+Local reproduction on 2026-10-28 (quick budgets, with the local checkpoints):
 
 ```
 pytest tests/test_core.py -q     15 passed
@@ -191,7 +191,9 @@ deploy/           launchd template for the reflex
 
 The code is grouped by role, not by chronology. The original lab notes in
 `docs/research/` are preserved as historical records; some paths and commands in
-them reflect the earlier flat layout, but the technical content is unchanged.
+them reflect the earlier flat layout, but the technical content is unchanged. They
+also keep the voice they were written in, including the AGI jokes and self-hype.
+This README is the neutral summary.
 
 ---
 
@@ -241,9 +243,9 @@ experiments do not.
 
 ---
 
-## What is proven, and what is not
+## What the experiments support, and what they don't
 
-**Supported by the experiments in this repository**
+**Supported by the experiments here**
 
 - Latent dynamics learn structure far below a random baseline, and the learned
   latent supports multi-step planning.
@@ -290,7 +292,7 @@ This started as an experiment on a laptop. It ended as a set of mechanisms, a
 measurement habit, and a clearer picture of what a world model can and cannot
 carry. This is the part worth keeping.
 
-### What was actually built
+### What was built
 
 Three layers, in increasing order of transferability:
 
@@ -307,34 +309,35 @@ Three layers, in increasing order of transferability:
    that was a hard-coded heuristic, the planner that was greedy code wearing an
    MPC label.
 
-The third layer transfers most easily. The first two are specific to this system.
+The third layer is the most portable; the first two are specific to this system.
 
-### The finding that matters most
+### The most consistent finding
 
-**Grounding quality predicts result quality.**
+**The results tracked the quality of the ground truth.**
 
-The strongest results are the ones where the environment could arbitrate: a file
-moved or it did not; KEEP survived or it did not; a crash log exists or it does
-not. The weakest results are the ones where only the model could judge:
-cross-world planning (~65%) and zero-shot transfer (0.23). The reflex verification
-rate had no samples at all in its last recorded window (0/0), so it remains
-unmeasured.
+The results that held up best were the ones where the environment could
+arbitrate: a file moved or it did not; KEEP survived or it did not; a crash log
+exists or it does not. The results that held up least well were the ones where
+only the model could judge: cross-world planning (~65%) and zero-shot transfer
+(0.23). The reflex verification rate had no samples at all in its last recorded
+window (0/0), so it remains unmeasured.
 
-That is not a coincidence. A world model is only as good as the signal that tells
-it it was wrong. When the signal is a kernel event, the result tends to survive an
-audit. When the signal is another model's opinion, it tends not to.
+The pattern is consistent with a simple explanation: a world model depends on the
+signal that tells it it was wrong. When the signal is a kernel event, the result
+tends to survive an audit. When the signal is another model's opinion, it tends
+not to.
 
 The routing result is the clean example: unsupervised surprise routing was **65%**;
 a supervised gate on frozen features, labeled by the OS, reached **100%**. The
 label was free because the environment already knew the answer.
 
 The practical version: **if you cannot verify a claim cheaply, treat the number
-as provisional.** This project got more from FSEvents than from any architecture
-change.
+as provisional.** In this project, much of the reliability came from the verifier,
+not from architecture changes.
 
 ### What transfers to world models
 
-Six findings worth carrying into another system:
+Six findings that may carry over to another system:
 
 | Finding | Evidence | What it means |
 |---|---|---|
@@ -390,12 +393,12 @@ The honest limit: Le-Gates bounded old-domain drift to **+169%**, not zero. It i
 a control mechanism, not a proof of immutability. The growable version got closer
 (**0.0025 → 0.0026**) because it changed the observation, not just the dynamics.
 
-### Why anyone should care
+### Why it might matter
 
-The dominant agent design puts a language model in the perception loop. That is
+A common agent design puts a language model in the perception loop. That is often
 slow, lossy, and expensive, and it re-derives the same physics at every step.
 
-This project is a small existence proof of a different split:
+This project is a working example of a different split:
 
 - a **fast System 1** that perceives, predicts, plans, and adapts at microsecond
   cost;
@@ -403,15 +406,15 @@ This project is a small existence proof of a different split:
 - a **safety floor below the prompt**, enforced at the tool boundary;
 - a **slow System 2** that is optional and called only when surprise is high.
 
-The claim is not that this system is general. It is that the loop can close on a
-real machine with a 0.15 MB model, and that the pieces people usually study
-separately — world modeling, continual learning, safety, perception, tool use —
-can be made to fit together. The failures are as informative as the successes:
+This is not a general system. The point is that the loop can close on a real
+machine with a 0.15 MB model, and that the pieces people usually study separately —
+world modeling, continual learning, safety, perception, tool use — can be made to
+fit together. The failures are as informative as the successes:
 they mark where the next architecture has to be different.
 
-### What would make it matter more
+### What would strengthen the evidence
 
-The honest agenda is short:
+The open problems are short:
 
 1. **Cross-world planning at ≥95%, across 20+ seeds.** The current ~65% is the
    clearest gap between "the latent learns" and "the latent is useful."
@@ -426,10 +429,10 @@ The honest agenda is short:
    pieces; the loop is not closed, and the last live window triggered zero
    hypotheses.
 
-Until then, the defensible claim is the narrow one: **a small latent world model
-can carry perception, planning, continual adaptation, and a formal safety floor on
-a real filesystem, and the integration runs end to end.** That is what the
-repository is evidence for.
+Until then, the honest claim is the narrow one: **a small latent world model can
+carry perception, planning, continual adaptation, and a formal safety floor on a
+real filesystem, and the integration runs end to end.** That is what the
+repository supports.
 
 ---
 
