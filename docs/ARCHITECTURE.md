@@ -45,7 +45,7 @@ cannot reinterpret a block as advice.
 | Module | Role | Key interface |
 |---|---|---|
 | `proteus/world/hjepa_torch.py` | Two-level H-JEPA world model | `HJEPA_K4.enc_macro`, `predict_macro`, `decode_pos` |
-| `proteus/world/gates.py` | Gated residual adapters | `build_gated`, `GatedDynamics`, `predict_macro_gated` |
+| `proteus/world/le_gates.py` | Le-Gates (gated residual adapters) | `build_gated`, `GatedDynamics`, `predict_macro_gated` |
 | `proteus/world/growable.py` | New observation slots + gated branches | `GrowableJEPA.add_type` |
 | `proteus/world/lifelong.py` | Multi-shift slot registry | `LifelongJEPA.add_slot`, `route` |
 | `proteus/world/world_latent.py` | Canonical latent space | `WorldLatent` |
@@ -90,7 +90,7 @@ VICReg:      variance + covariance (anti-collapse)
 loss = ||z_pred − z_target*||² + pos_loss + VICReg
 ```
 
-## Continual-learning specification
+## Continual-learning specification (Le-Gates)
 
 ```
 gate = sigmoid(gate_logit)                 # trainable

@@ -7,7 +7,7 @@ the PLAN.md targets:
   2. MPC planner success (hard env)
   3. counterfactual reject
   4. continual learning (MSE<0.02, no forget)
-  5. Proteus Gates growable (learn new type, no forget)
+  5. Le-Gates growable (learn new type, no forget)
   6. multi-agent latent comm (synthetic binding + OOD)
   7. robustness: 1000-step no-drift, seed stability
 
@@ -153,7 +153,7 @@ def eval_continual(quick=False):
             "pass": new_mse < 0.02 and abs(forget) < 0.005}
 
 
-# ---------------- 5. Proteus Gates growable ----------------
+# ---------------- 5. Le-Gates growable ----------------
 def eval_growable(quick=False):
     from proteus.world.growable import (GrowableJEPA, BASE_DIM, ACT_DIM, DynamicWorld,
                           collect, train_base, macro_mse)
@@ -680,7 +680,7 @@ def main():
         print(f"  new_mse {r['new_mse']:.4f} (target <0.02), forgetting {r['forgetting']:+.4f} "
               f"-> {'PASS' if r['pass'] else 'FAIL'}")
 
-    print("\n[5/19] Proteus Gates growable")
+    print("\n[5/19] Le-Gates growable")
     r = eval_growable(quick=args.quick)
     results["growable"] = r
     print(f"  shift_mse {r['shift_mse_before']:.4f}->{r['shift_mse_after']:.4f} "

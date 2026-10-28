@@ -1,16 +1,20 @@
-# LE-GATES — Continual Learning for proteus (verified)
+# LE-GATES — Continual Learning for the Proteus world model (verified)
 
-## What Proteus Gates is (from the codebase)
-Two variations exist in the project:
-1. the author's earlier hard-gate prototype — hard gates: `gateA_delta`/`gateB_delta`
-   init 0 → gate==1.0 exactly, `freeze_gates()` sets delta=-1 (path off), freezes
-   params. Behavior-preserving surgery (H-SURG-1 PASS, ppl delta 0.0000).
-2. An earlier prototype — **trainable sigmoid gates**: `gateA_logit`/`gateB_logit`
+## What Le-Gates is
+
+Le-Gates is the gated residual pattern used across the author's model
+experiments. Two variants came before this world-model adaptation:
+
+1. **Hard gates** (behavior-preserving surgery): `gateA_delta`/`gateB_delta`
+   initialize to 0, so the gate equals 1.0 exactly; `freeze_gates()` sets the
+   delta to -1 (path off) and freezes the parameters. Verified as behavior
+   preserving: H-SURG-1 PASS, perplexity delta 0.0000.
+2. **Trainable sigmoid gates** (smooth adaptation): `gateA_logit`/`gateB_logit`
    are `nn.Parameter`, `gate = sigmoid(logit)`, applied as residual scalars:
    `x = x + gateA * attn(norm(x))` / `x = x + gateB * mlp(norm(x))`.
    `freeze_gates()` → logit -10 (σ≈0), `unfreeze_gates()` → logit 0 (σ=0.5).
 
-## The adaptation for proteus
+## The adaptation for Proteus
 Applied the **trainable residual gate** to the world-model's macro dynamics
 predictor (the component that must adapt when the world changes):
 
@@ -33,10 +37,10 @@ into the txt channel. Measured macro latent MSE (lower = better prediction):
 | Method | shift-MSE before→after | old-MSE before→after | shift learn | old drift |
 |---|---|---|---|---|
 | **Naive CL** (all weights) | 0.0113 → 0.0096 | 0.0011 → 0.0123 | **+15%** | **+1015%** (catastrophic forgetting) |
-| **True Proteus Gates** | 0.0113 → 0.0083 | 0.0011 → 0.0030 | **+26%** | **+169%** (bounded, σ(gate)=0.179) |
+| **True Le-Gates** | 0.0113 → 0.0083 | 0.0011 → 0.0030 | **+26%** | **+169%** (bounded, σ(gate)=0.179) |
 
 ## Reading the result
-- **Proteus Gates learns the new domain BETTER** (+26% vs +15%) AND **protects the old
+- **Le-Gates learns the new domain BETTER** (+26% vs +15%) AND **protects the old
   domain ~6x better** (169% vs 1015% drift).
 - The gate σ **learned down to 0.179** — the model actively chose to rely mostly
   on the old path with a small gated correction. It's not a hard switch; it's a
@@ -46,6 +50,7 @@ into the txt channel. Measured macro latent MSE (lower = better prediction):
   residual, NOT freeze the encoder/readout. The residual structure is essential.
 
 ## Files
-- the earlier prototype — original trainable sigmoid gates (source)
-- the author's earlier hard-gate prototype (source)
-- `/tmp/gates_compare2.py` — the head-to-head (naive vs true Proteus Gates)
+- `proteus/world/le_gates.py` — Le-Gates implementation for the world model
+- `proteus/eval/run_evals.py` — eval 5 (growable Le-Gates) and eval 4 (continual)
+- `docs/research/GROWABLE.md` — the growable-latent extension
+- `docs/research/WO1_LIFELONG.md` — multi-shift slot routing

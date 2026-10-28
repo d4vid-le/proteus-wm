@@ -1,4 +1,4 @@
-# HONEST AUDIT — Proteus Gates in the autonomous agent
+# HONEST AUDIT — Le-Gates in the autonomous agent
 
 ## Verdict: the earlier claim was a shortcut. Now corrected.
 
@@ -13,7 +13,7 @@ prediction by **1.17** — the agent would forget everything the moment a shift 
 detected. Fixed: `build_gated` now copies the **trained** weights into `old` (verified
 pred diff = **0.0** after build).
 
-## Hollow claim: "learning new file types" via Proteus Gates
+## Hollow claim: "learning new file types" via Le-Gates
 
 The daemon detected `.md` files (new-file-type surge) and logged `learned_gated`
 with macro_mse dropping. But:
@@ -24,7 +24,7 @@ with macro_mse dropping. But:
 That was a shortcut. New file types are **safely misc-routed by grounded logic**,
 but the MODEL never learns them — and claiming it did was wrong.
 
-## What Proteus Gates actually does (honest, verified)
+## What Le-Gates actually does (honest, verified)
 
 On a **representable** shift (the output dynamics genuinely change in a way the
 model can see):
@@ -34,7 +34,7 @@ model can see):
   same output space, so a single gate can't serve both perfectly; old WEIGHTS are
   untouched, but the mixed output drifts)
 
-**The honest claim:** Proteus Gates lets a frozen-old-path model adapt to a representable
+**The honest claim:** Le-Gates lets a frozen-old-path model adapt to a representable
 shift in the gated new path, with the old weights protected. It does NOT let a
 fixed-dim-obs model learn genuinely new observation types, and "no forgetting" is
 partial when the new domain redefines the same outputs.
@@ -48,6 +48,6 @@ partial when the new domain redefines the same outputs.
 - Gates install only on real, representable dynamics shifts.
 
 ## Files changed
-- `gates.py` — build_gated preserves trained weights (critical bug fix)
+- `le_gates.py` — build_gated preserves trained weights (critical bug fix)
 - `autonomous.py` — honest shift detection (representability check), no false
   learning claims from misc-surge

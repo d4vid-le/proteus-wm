@@ -40,7 +40,7 @@ import torch
 
 from proteus.world.backfill import replay_session           # noqa: E402
 from proteus.bridge.llm_bridge import load_whiten               # noqa: E402  (numpy only)
-from proteus.world.gates import predict_macro_gated              # noqa: E402
+from proteus.world.le_gates import predict_macro_gated              # noqa: E402
 from proteus.world.world_latent import WorldLatent                  # noqa: E402
 
 JOURNAL = ROOT / "data" / "autonomous_journal.jsonl"

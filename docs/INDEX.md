@@ -28,7 +28,7 @@ of each experiment.
 
 | Document | Contents |
 |---|---|
-| [`research/GATES.md`](research/GATES.md) | Gated residual adapters: naive vs gated forgetting |
+| [`research/GATES.md`](research/GATES.md) | Le-Gates: naive vs gated forgetting |
 | [`research/GROWABLE.md`](research/GROWABLE.md) | Growable latent: new types with zero growth perturbation |
 | [`research/WO1_LIFELONG.md`](research/WO1_LIFELONG.md) | Three sequential shifts, routing matrix |
 | [`research/AUTONOMOUS_GATES.md`](research/AUTONOMOUS_GATES.md) | Gate installation in the live agent |

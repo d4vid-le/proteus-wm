@@ -1,6 +1,6 @@
 # P3-4 — Ultra-Low Latency & Footprint Optimization
 
-`latency.py` — exports the base JEPA + Proteus Gates inference to TorchScript with
+`latency.py` — exports the base JEPA + Le-Gates inference to TorchScript with
 static shapes, and benchmarks latency + footprint.
 
 ## Verified results

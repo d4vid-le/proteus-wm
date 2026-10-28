@@ -60,7 +60,7 @@ Proteus takes the opposite approach:
 | **Predict** | Two-level H-JEPA: micro dynamics (`k=4`, 32-d) and macro dynamics (64-d; `k=4` default, `k=16` in the hierarchical planner), EMA target encoder + VICReg anti-collapse |
 | **Surprise** | Squared latent prediction error; adaptive threshold at rolling mean + k·σ |
 | **Verify** | Re-read the real filesystem, probe crash logs, confirm the intended effect |
-| **Learn** | Gated residual adapters, growable latent slots, anchored replay, lifelong slot routing |
+| **Learn** | Le-Gates, growable latent slots, anchored replay, lifelong slot routing |
 | **Act** | CEM/MPC in latent space, constrained by the KEEP barrier |
 
 ### Perception streams
@@ -87,7 +87,7 @@ contains the protocol and the caveats.
 |---|---|---|
 | Latent dynamics learn | macro MSE **0.0063** vs **1.18** random floor | `proteus/eval/run_evals.py`; `docs/research/FINDINGS.md` |
 | Hierarchical planning beats flat MPC | **8/8** vs **0/8** success on a 36-file task; **72** vs **178,176** rollouts | `docs/research/P31_HIERARCHICAL.md` |
-| Gated adaptation reduces forgetting | old-domain drift **+169%** vs **+1015%** for naive fine-tuning; new-domain MSE **−26%** | `docs/research/GATES.md` |
+| Le-Gates reduces forgetting | old-domain drift **+169%** vs **+1015%** for naive fine-tuning; new-domain MSE **−26%** | `docs/research/GATES.md` |
 | Growable latent adds types without forgetting | old MSE **0.0025 → 0.0026**, new-type MSE **−60%**, growth perturbation **0.0000** | `docs/research/GROWABLE.md` |
 | Lifelong routing is stable | 3 sequential shifts, **6/6** routing diagonal, zero backward drift | `docs/research/WO1_LIFELONG.md` |
 | Barrier certifies KEEP under all gates | **0** violations vs **104** unprojected, margin ≈ **3.0** | `docs/research/P33_BARRIER.md` |
@@ -236,7 +236,7 @@ experiments do not.
   latent supports multi-step planning.
 - Hierarchical macro-planning solves a long-horizon task that flat k=4 MPC fails,
   with two to three orders of magnitude fewer rollouts.
-- Gated residual adapters and growable latent slots reduce forgetting relative to
+- Le-Gates (gated residual adapters) and growable latent slots reduce forgetting relative to
   naive fine-tuning, with a measurable zero-perturbation growth boundary.
 - A dedicated barrier head plus a CBF projection certifies KEEP preservation across
   every enumerated gate combination and perturbation scale tested.
@@ -268,6 +268,155 @@ experiments do not.
 
 The full argument, including the experiments that failed and why, is in
 [`docs/RESEARCH.md`](docs/RESEARCH.md).
+
+---
+
+## Reflections: what this taught us
+
+This started as an experiment on a laptop. It ended as a set of mechanisms, a
+measurement habit, and a clearer picture of what a world model can and cannot
+carry. This is the part worth keeping.
+
+### What was actually built
+
+Three layers, in increasing order of transferability:
+
+1. **A working loop.** A real directory is perceived through kernel telemetry,
+   encoded into a 64-d latent, planned over, acted on, and verified by re-reading
+   the filesystem. The loop closes without a language model.
+2. **A mechanism kit.** Le-Gates for dynamics shift, a growable latent for new
+   observation types, lifelong slot routing, a counterfactual guard, a CBF
+   certificate, a frozen-encoder vision path, and an MCP boundary that returns
+   safety blocks as errors.
+3. **A measurement habit.** Every capability has a falsifier next to it. The most
+   useful artifact may be the correction log: the bug that destroyed trained
+   weights, the "new type" that was invisible to the model, the counterfactual
+   that was a hard-coded heuristic, the planner that was greedy code wearing an
+   MPC label.
+
+The third layer transfers most easily. The first two are specific to this system.
+
+### The finding that matters most
+
+**Grounding quality predicts result quality.**
+
+The strongest results are the ones where the environment could arbitrate: a file
+moved or it did not; KEEP survived or it did not; a crash log exists or it does
+not. The weakest results are the ones where only the model could judge:
+cross-world planning (~65%) and zero-shot transfer (0.23). The reflex verification
+rate had no samples at all in its last recorded window (0/0), so it remains
+unmeasured.
+
+That is not a coincidence. A world model is only as good as the signal that tells
+it it was wrong. When the signal is a kernel event, the result tends to survive an
+audit. When the signal is another model's opinion, it tends not to.
+
+The routing result is the clean example: unsupervised surprise routing was **65%**;
+a supervised gate on frozen features, labeled by the OS, reached **100%**. The
+label was free because the environment already knew the answer.
+
+The practical version: **if you cannot verify a claim cheaply, treat the number
+as provisional.** This project got more from FSEvents than from any architecture
+change.
+
+### What transfers to world models
+
+Six findings worth carrying into another system:
+
+| Finding | Evidence | What it means |
+|---|---|---|
+| **One-step latent MSE is a weak proxy for planning.** | Macro MSE **0.0063** vs **1.18** random floor, yet cross-world planning stayed at ~65% and flat MPC failed **0/8** on a long-horizon task. | Report planning success, not just prediction loss. A low loss can coexist with a latent geometry that CEM cannot search. |
+| **The training distribution must look like the plan.** | Goal-biased collection (70% greedy / 30% random) took planning from **5/20** to **13/20**; the value head did not help. | Random-walk data teaches what the world does, not how to reach a goal. Collect trajectories that resemble the plans you will ask for. |
+| **Horizon is a capability boundary.** | Flat k=4: **0/8**; hierarchical k=16: **8/8**; **178,176** vs **72** rollouts. | Temporal abstraction changes which tasks are solvable, not just how fast. Treat the macro horizon as an architectural choice. |
+| **Continual learning fails silently when the input cannot represent the new factor.** | The audit measured a latent difference of **0.0** for the "new" file type; the model had been training on noise. | Add a representability test before claiming adaptation. If the new factor is not in the observation, the loss curve is lying. |
+| **Frozen perception transfers; the projection does not.** | ResNet18 **3.1 ms**, **0.997** alignment; cross-world few-shot **0.68–0.75**, zero-shot **0.23**. | Budget a new projection per world. The backbone is the transferable part; the task-specific latent is not. |
+| **A safety certificate inherits the margin of its detector.** | The first barrier used a general readout with margin ~**0.01** (no projection could certify); a dedicated head at margin ~**3.0** gave **0** violations vs **104** raw. | Do not attach a CBF to a readout that was not trained to be a barrier. Measure the margin, and enforce below the prompt. |
+
+Two more that are about agents rather than world models:
+
+- **Latent communication is sufficient before it is efficient.** Two agents
+  exchanging 32-d latents preserved a safety decision (**1.000** vs **0.367** for the no-communication
+  agent), but the latent was 128 bytes against a 30-byte text baseline. The
+  representation result is real; the bandwidth claim is not. Keep those questions
+  separate.
+- **Per-event economics favor the small model.** **14.5 µs** and **0.15 MB** means
+  the decision path can run on every filesystem event. An LLM cannot. The bet is
+  not that small models are smarter; it is that the fast loop should be cheap
+  enough to run always, with the expensive model called on surprise.
+
+### Le-Gates: one idea, three places
+
+Le-Gates is the common thread across these experiments, and it is worth naming as
+a pattern rather than a module.
+
+The invariant is always the same:
+
+```
+keep an identity path
+add a zero-initialized residual
+learn a scalar gate
+freeze what you want to preserve
+```
+
+In the earlier language-model work the gate sat on attention/MLP residuals: a hard
+gate for behavior-preserving surgery, a sigmoid gate for smooth adaptation. Here
+it sits on the world model's dynamics delta:
+
+```
+z' = z + (1−g)·old(z,a) + g·new(z,a)
+```
+
+and on the growable latent, where a new observation type gets a zero-init slot
+scaled by its own input count. It transfers across model classes because the
+underlying problem is identical: **distribution shift under a preservation
+constraint.** The gate makes "no change" the default and "change" a measured
+deviation. That is a better starting point than a learning-rate tweak, because it
+gives you a place to look when the old behavior moves.
+
+The honest limit: Le-Gates bounded old-domain drift to **+169%**, not zero. It is
+a control mechanism, not a proof of immutability. The growable version got closer
+(**0.0025 → 0.0026**) because it changed the observation, not just the dynamics.
+
+### Why anyone should care
+
+The dominant agent design puts a language model in the perception loop. That is
+slow, lossy, and expensive, and it re-derives the same physics at every step.
+
+This project is a small existence proof of a different split:
+
+- a **fast System 1** that perceives, predicts, plans, and adapts at microsecond
+  cost;
+- a **kernel-verified ground truth** that turns every action into a label;
+- a **safety floor below the prompt**, enforced at the tool boundary;
+- a **slow System 2** that is optional and called only when surprise is high.
+
+The claim is not that this system is general. It is that the loop can close on a
+real machine with a 0.15 MB model, and that the pieces people usually study
+separately — world modeling, continual learning, safety, perception, tool use —
+can be made to fit together. The failures are as informative as the successes:
+they mark where the next architecture has to be different.
+
+### What would make it matter more
+
+The honest agenda is short:
+
+1. **Cross-world planning at ≥95%, across 20+ seeds.** The current ~65% is the
+   clearest gap between "the latent learns" and "the latent is useful."
+2. **A real baseline suite.** The same tasks against a frozen JEPA, a
+   Dreamer-style model, and an LLM tool agent. Without that, the integration claim
+   is untested against the alternatives.
+3. **Amortized adapters.** A learned adapter-generator would turn "new world" from
+   a training event into an inference event.
+4. **Compositional worlds.** Shared dynamics primitives plus world-specific
+   composition, so a new world is a recombination rather than a new slot.
+5. **Autonomous escalation with a measured verification rate.** The reflex has the
+   pieces; the loop is not closed, and the last live window triggered zero
+   hypotheses.
+
+Until then, the defensible claim is the narrow one: **a small latent world model
+can carry perception, planning, continual adaptation, and a formal safety floor on
+a real filesystem, and the integration runs end to end.** That is what the
+repository is evidence for.
 
 ---
 

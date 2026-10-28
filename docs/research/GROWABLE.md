@@ -1,4 +1,4 @@
-# GROWABLE Proteus Gates — the honest version (new types actually learned)
+# GROWABLE Le-Gates — the honest version (new types actually learned)
 
 The audit exposed that fixed-dim obs can't learn new file types. This is the fix:
 a **growable world model** where new types enter the observation and get their own

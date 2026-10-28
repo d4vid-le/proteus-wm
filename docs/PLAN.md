@@ -3,7 +3,7 @@
 ## Status (2026-09-02): DUAL-BRAIN COMPLETE — 15/15 pytest, 19/19 eval, 3/3 dual-brain
 
 ## The full system (all documented in README.md + ARCHITECTURE.md)
-- H-JEPA world model, continual learning (Proteus Gates/growable/lifelong),
+- H-JEPA world model, continual learning (Le-Gates/growable/lifelong),
   MPC/CEM planning, counterfactual rejection, formal KEEP safety barrier,
   real perception (JEPA-way vision + SCK streaming), macOS telemetry
   (FSEvents/NSWorkspace/shell), the surprise reflex, and the Pi dual-brain
@@ -36,7 +36,7 @@
 
 ## Phase 2 — Continual learning REAL
 - [x] Verified tuples + anchored replay + zero forgetting (continual_learn.py)
-- [x] Proteus Gates trainable residual gates (proteus/world/gates.py, GATES.md)
+- [x] Le-Gates trainable residual gates (proteus/world/le_gates.py, GATES.md)
 - [x] Growable model: new types learned without forgetting (growable.py, GROWABLE.md)
 
 ## Phase 3 — Counterfactual / model-based rejection
@@ -46,7 +46,7 @@
 ## Phase 4 — Multi-agent latent communication
 - [x] Synthetic: spatial binding 1.0, 3-agent fusion 1.0, OOD transfer 1.0, dropout graceful
       (multiagent.py, PROOF.md, SCALE.md, SCALE_UP.md)
-- [x] Real env: autonomous daemon + Proteus Gates + honest shift detection (AUTONOMOUS_GATES.md)
+- [x] Real env: autonomous daemon + Le-Gates + honest shift detection (AUTONOMOUS_GATES.md)
 - [x] Real multi-agent: 2 agents on REAL dirs, latent handoff, KEEP preserved, A sorted
       (multiagent_real.py, MULTIAGENT_REAL.md)
 
@@ -61,7 +61,7 @@
 | MPC planner success | 1.0 (hard env) | >90% | ✅ PASS |
 | Counterfactual reject | 1.0 | >90% | ✅ PASS |
 | Continual MSE <0.02 | 0.0060, forget -0.0006 | <0.02, no forget | ✅ PASS |
-| Proteus Gates growable | 59% learn, old flat | learn, no forget | ✅ PASS |
+| Le-Gates growable | 59% learn, old flat | learn, no forget | ✅ PASS |
 | Multi-agent latent | 1.0 synthetic + real dirs | 2-agent pass | ✅ PASS |
 | Eval harness | run_evals.py 7/7 | single scoreboard | ✅ PASS |
 | Robustness | 3/3 seeds clean, 0 keep lost | no drift | ✅ PASS |
@@ -90,7 +90,7 @@
 | 2 MPC hard env | PASS (1.00) |
 | 3 counterfactual reject | PASS (1.00) |
 | 4 continual learning | PASS (0.0066, forget 0.000) |
-| 5 growable Proteus Gates | PASS (49% learn, old flat) |
+| 5 growable Le-Gates | PASS (49% learn, old flat) |
 | 5b lifelong multi-shift | PASS (WO1) |
 | 6 multi-agent | PASS (1.00) |
 | 7 robustness | PASS (3/3 seeds, 0 lost) |
@@ -128,7 +128,7 @@
 | 2 | MPC hard env | PASS |
 | 3 | counterfactual reject | PASS |
 | 4 | continual learning | PASS |
-| 5 | growable Proteus Gates | PASS |
+| 5 | growable Le-Gates | PASS |
 | 5b | lifelong multi-shift | PASS (WO1) |
 | 6 | multi-agent | PASS |
 | 7 | robustness | PASS |

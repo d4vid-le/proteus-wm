@@ -60,7 +60,7 @@ general pos_head (margin ~0.01) can't be certified.
 [2] MPC planner (hard env)      PASS
 [3] counterfactual reject       PASS
 [4] continual learning          PASS
-[5] Proteus Gates growable           PASS
+[5] Le-Gates growable           PASS
 [5b] lifelong multi-shift       PASS  (WO1)
 [6] multi-agent latent comm     PASS
 [7] seed stability & KEEP guard PASS

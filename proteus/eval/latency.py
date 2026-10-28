@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """latency.py — P3-4: Ultra-low latency & footprint optimization.
 
-Exports the base JEPA + Proteus Gates inference pipeline to TorchScript with static
+Exports the base JEPA + Le-Gates inference pipeline to TorchScript with static
 shapes, then benchmarks:
   - ingestion latency per file (encode + predict) — target < 150 microseconds
   - resident memory footprint — target < 30 MB RAM

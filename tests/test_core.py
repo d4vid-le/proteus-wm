@@ -6,7 +6,7 @@ Covers the core building blocks so regressions are caught fast:
   - GatedDynamics / build_gated preserves behavior (the critical bug we fixed)
   - GrowableJEPA growth is invariant + learns new type
   - RealEnv obs/step/verify on an actual temp dir
-  - Proteus Gates vs naive (no-forgetting property on a representable shift)
+  - Le-Gates vs naive (no-forgetting property on a representable shift)
 """
 import pathlib as _pathlib
 import sys as _sys
@@ -24,7 +24,7 @@ import torch
 import pytest
 
 from proteus.world.hjepa_torch import HJEPA_K4
-from proteus.world.gates import GatedDynamics, build_gated, predict_macro_gated
+from proteus.world.le_gates import GatedDynamics, build_gated, predict_macro_gated
 
 
 def make_model(**kw):
@@ -124,8 +124,8 @@ def test_realenv_step_verify():
 
 
 def test_le_gates_vs_naive_no_forgetting():
-    """Proteus Gates freezes old -> no forgetting; naive drifts. Compact synthetic."""
-    from proteus.world.gates import build_gated, predict_macro_gated
+    """Le-Gates freezes old -> no forgetting; naive drifts. Compact synthetic."""
+    from proteus.world.le_gates import build_gated, predict_macro_gated
     torch.manual_seed(0)
     z = torch.randn(64, 64)
     A = torch.randint(0, 4, (64, 4))

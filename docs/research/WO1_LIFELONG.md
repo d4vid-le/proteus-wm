@@ -1,6 +1,6 @@
-# WO1 — Multi-Shift Sequential Adaptation (Lifelong Proteus Gates)
+# WO1 — Multi-Shift Sequential Adaptation (Lifelong Le-Gates)
 
-`lifelong.py` — extends Proteus Gates to a multi-gate lifelong registry: each
+`lifelong.py` — extends Le-Gates to a multi-gate lifelong registry: each
 discovered file type gets its OWN gated residual branch + routing score. New
 shift -> allocate slot, FREEZE all previous, train only the new slot.
 

@@ -35,10 +35,10 @@ BASE_CKPT = ROOT / "checkpoints" / "cleanup_hjepa_real.pt"
 def load_hjepa(ckpt=None, device="cpu"):
     """Load the H-JEPA world model. Prefers the gated continual-learning
     checkpoint (mirrors autonomous.py's load_model), else the base real-env
-    checkpoint. The gated checkpoint needs the Proteus Gates wrapper around
+    checkpoint. The gated checkpoint needs the Le-Gates wrapper around
     pred_macro before load_state_dict."""
     from proteus.world.hjepa_torch import HJEPA_K4
-    from proteus.world.gates import build_gated
+    from proteus.world.le_gates import build_gated
     model = HJEPA_K4(obs_dim=OBS_DIM, act_dim=ACT_DIM, hidden=128,
                      z_micro=32, z_macro=64, k=4, pos_dim=OBS_DIM)
     if ckpt is not None:

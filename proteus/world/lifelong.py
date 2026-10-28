@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""lifelong.py — WO1: Multi-shift sequential adaptation (Lifelong Proteus Gates).
+"""lifelong.py — WO1: Multi-shift sequential adaptation (Lifelong Le-Gates).
 
-Extends the growable Proteus Gates model to a MULTI-GATE LIFELONG REGISTRY:
+Extends the growable Le-Gates model to a MULTI-GATE LIFELONG REGISTRY:
   - Each discovered file type gets its OWN gated residual branch (slot k).
   - A softmax routing gate routes observations to the correct adapter branch
     (Top-1 routing over slot scores), instead of summing all branches.
@@ -229,7 +229,7 @@ def train_base(model, samples, epochs=150, lr=3e-4):
 
 def main():
     print("=" * 74)
-    print("WO1: MULTI-SHIFT SEQUENTIAL ADAPTATION (Lifelong Proteus Gates)")
+    print("WO1: MULTI-SHIFT SEQUENTIAL ADAPTATION (Lifelong Le-Gates)")
     print("=" * 74)
     torch.manual_seed(0)
     model = LifelongJEPA(BASE_DIM, ACT_DIM, hidden=128, z_macro=64, k=4)

@@ -38,7 +38,7 @@ import torch
 
 import proteus.envs.real_env as real_env
 from proteus.world.hjepa_torch import HJEPA_K4
-from proteus.world.gates import build_gated, predict_macro_gated
+from proteus.world.le_gates import build_gated, predict_macro_gated
 
 # unbuffered stdout so daemon logs stream to files live
 sys.stdout.reconfigure(line_buffering=True)
@@ -114,7 +114,7 @@ class VisionCountRouter:
 
 def load_model(ckpt):
     """Load the H-JEPA; if the gated continual-learning checkpoint exists, load
-    that instead (it has the Proteus Gates residual dynamics wrapper)."""
+    that instead (it has the Le-Gates residual dynamics wrapper)."""
     ckpt = pathlib.Path(ckpt or ROOT / "checkpoints" / "cleanup_hjepa_real.pt")
     gated = GATED_CKPT
     model = HJEPA_K4(obs_dim=OBS_DIM, act_dim=ACT_DIM, hidden=128,
@@ -154,7 +154,7 @@ class AutonomousAgent:
         self.last_action = None
         self.last_action_time = 0
         self.cooldown = 2.0
-        # ---- Proteus Gates continual learning state ----
+        # ---- Le-Gates continual learning state ----
         self.gated = hasattr(self.model, "pred_macro") and hasattr(self.model.pred_macro, "gate_logit")
         self.shift_detect_win = []  # recent macro prediction errors
         self.shift_thresh = 0.02  # macro-MSE above this => likely distribution shift
@@ -213,12 +213,12 @@ class AutonomousAgent:
         return False
 
     def _install_gates(self):
-        """Install Proteus Gates residual dynamics and freeze the old domain path."""
+        """Install Le-Gates residual dynamics and freeze the old domain path."""
         if not self.gated:
             build_gated(self.model)
             self.gated = True
             self.stats["gates_added"] += 1
-            self.log("gates_added", note="Proteus Gates residual dynamics installed")
+            self.log("gates_added", note="Le-Gates residual dynamics installed")
         if hasattr(self.model.pred_macro, "freeze_old"):
             self.model.pred_macro.freeze_old()
             self.log("gates_frozen_old", note="old domain path protected")
@@ -394,7 +394,7 @@ class AutonomousAgent:
         # train macro predictor on the verified buffer (anchored replay)
         model = self.model
         if self.gated:
-            # gated: train ONLY the new-path + gate (old frozen) — Proteus Gates
+            # gated: train ONLY the new-path + gate (old frozen) — Le-Gates
             gm = model.pred_macro
             opt = torch.optim.Adam(list(gm.new.parameters()) + [gm.gate_logit], lr=3e-3)
         else:
@@ -487,7 +487,7 @@ class AutonomousAgent:
                     obs_tk = vec
                     self.buffer.append((obs_t, A, obs_tk))
                     self.buffer = self.buffer[-self.learn_every:]
-                    # ---- Proteus Gates: monitor macro error, detect shift, learn gated ----
+                    # ---- Le-Gates: monitor macro error, detect shift, learn gated ----
                     try:
                         err = self.macro_predict_err(obs_t, A, obs_tk)
                         self.shift_detect_win.append(err)

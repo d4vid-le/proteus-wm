@@ -17,8 +17,8 @@ latent, learns two timescales of latent dynamics, plans by sampling action
 sequences in that latent space, and verifies every action by re-reading the real
 filesystem. It adds three mechanisms that are usually studied separately:
 
-1. **Gated residual adaptation** for distribution shift, with the old dynamics
-   path frozen.
+1. **Le-Gates** (gated residual adaptation) for distribution shift, with the old
+   dynamics path frozen.
 2. **A growable latent** that adds observation slots for new file types without
    perturbing old behaviour.
 3. **A control-barrier-function safety projection** with a dedicated KEEP
@@ -152,14 +152,14 @@ like-for-like speed comparison.
 
 ### 5.3 Continual learning (Q3)
 
-#### Gated residual adapters
+#### Le-Gates (gated residual adapters)
 
 A new file type (`.md`) changes the dynamics. Two adaptation strategies:
 
 | Method | New-domain MSE | Old-domain drift |
 |---|---|---|
 | Naive fine-tuning (all weights) | 0.0113 → 0.0096 (−15%) | 0.0011 → 0.0123 (**+1015%**) |
-| Gated residual adapter | 0.0113 → 0.0083 (−26%) | 0.0011 → 0.0030 (**+169%**) |
+| Le-Gates adapter | 0.0113 → 0.0083 (−26%) | 0.0011 → 0.0030 (**+169%**) |
 
 The gate `g = sigmoid(logit)` multiplies a residual branch:
 `z' = z + (1−g)·old(z,a) + g·new(z,a)`. The old branch is frozen; the new branch
@@ -458,7 +458,207 @@ repository supports.
 
 ---
 
-## 11. Relation to prior work
+## 11. What transfers to world models
+
+The checkpoint is not the transferable output. The regularities are. Each is
+stated with the evidence that produced it, the mechanism that plausibly explains
+it, and the condition under which it might fail.
+
+### 11.1 Prediction loss is not planning quality
+
+**Evidence:** macro MSE **0.0063** against a **1.18** random-latent floor, yet
+cross-world planning stayed at ~65% and flat k=4 MPC failed **0/8** on a 36-file
+task.
+
+**Mechanism:** one-step MSE measures local flow. CEM needs a global distance
+landscape. A latent can predict transitions accurately and still have a geometry
+with local minima, or drift that compounds over a rollout. The two metrics are
+measuring different objects.
+
+**Implication:** report planning success as a function of horizon and seed, and
+measure rollout drift directly: encode the real state after k steps, compare it
+to the k-step predicted latent. A model with a worse one-step loss but a better
+rollout geometry would be a useful counterexample; this project did not run that
+comparison.
+
+### 11.2 The data distribution is part of the planner
+
+**Evidence:** goal-biased collection (70% greedy, 30% random) took planning from
+**5/20** to **13/20**; a value head did not improve on raw distance-to-goal MPC.
+
+**Mechanism:** random-walk transitions teach the world's transition operator but
+not the subspace the planner will search. The dynamics never learn what
+goal-directed latent structure looks like, so distance-to-goal is not monotonic
+under the learned model.
+
+**Implication:** treat the data-collection policy as a planner hyperparameter. If
+you will plan greedily, collect greedily. This is cheaper than an architecture
+change and was one of the largest single improvements in the project.
+
+**Caveat:** a 5x5 grid with four actions. The effect size may not transfer to
+high-dimensional worlds, but the principle is likely to.
+
+### 11.3 Horizon is a capability boundary
+
+**Evidence:** flat k=4 **0/8**; hierarchical k=16 plus k=4 refinement **8/8**;
+**178,176** vs **72** predictor rollouts.
+
+**Mechanism:** the flat planner's horizon cannot represent the batch-level phase
+structure of the task. It is incomplete, not merely slow. The hierarchical planner
+commits to a macro phase once and then refines.
+
+**Implication:** the macro-action duration is an architectural choice about which
+tasks are in the model's class, not a tuning knob. The 2474x rollout ratio is
+inflated by the failing planner exhausting its budget; the capability difference
+is the real result.
+
+**Caveat:** eight trials, one task family. This is a strong existence proof, not
+a scaling law.
+
+### 11.4 Continual learning needs a representability test
+
+**Evidence:** the audit measured a latent difference of **0.0** for the "new" file
+type. The 12-d observation could not encode `.md` or `.csv`; the model had been
+training on noise while the loss moved.
+
+**Mechanism:** the learner optimized a target that was not a function of the
+input. The information was absent, so no amount of gated training could create
+it.
+
+**Implication:** before and after adaptation, test whether the new factor is
+separable from the representation (a linear probe, a nearest-centroid test, or an
+explicit latent difference). If it is not, the claim is about routing, not
+learning. This test should be standard in continual-learning papers.
+
+**Falsifier:** a model that acquires a genuinely new observation type without
+growing its input or representation would weaken the case for growth. This
+project did not find one; the fixed-dimension attempts failed.
+
+### 11.5 Transfer lives in the backbone, not the projection
+
+**Evidence:** ResNet18 at **3.1 ms** and **0.997** alignment; cross-world few-shot
+**0.68–0.75**; zero-shot separation **0.23**.
+
+**Mechanism:** the frozen encoder carries generic visual structure. The projection
+is trained to the file-count latent and is world-specific. The general part
+transfers; the task-specific map does not.
+
+**Implication:** budget a new projection per world. A "universal latent" claim
+needs evidence that the projection itself transfers, which this project did not
+find.
+
+**Caveat:** synthetic rendered scenes and a Finder window, not arbitrary
+screenshots.
+
+### 11.6 Safety inherits the detector margin
+
+**Evidence:** the first barrier used the general position readout, margin ~**0.01**;
+no projection could certify it. A dedicated keep-detector at margin ~**3.0** gave
+**0** violations against **104** unprojected, across nine gate combinations and
+four perturbation scales.
+
+**Mechanism:** the CBF projection removes the hazard-normal component of a
+perturbation. If the barrier gradient is noise, the projection is noise. The
+certificate's strength is the detector's margin.
+
+**Implication:** report the margin distribution on the states that matter, and
+enforce the block at the tool boundary (an MCP error), below the prompt. A safety
+instruction in a system prompt is not a barrier.
+
+**Caveat:** empirical enumeration over 37 states, not a proof over the reachable
+set. A distribution shift outside the barrier's support can invalidate the
+certificate.
+
+### 11.7 Sufficiency is not efficiency
+
+**Evidence:** latent exchange preserved the safety decision at **1.000** vs
+**0.367** for the no-communication agent, with binding accuracy **0.711–1.000**
+depending on the view split. But the 32-d latent was 128 bytes against a 30-byte
+text baseline.
+
+**Mechanism:** a latent can be a sufficient statistic for a binary decision and
+still be a poor compression of the state. Those are different claims.
+
+**Implication:** measure decision accuracy and bits separately. "Fewer tokens"
+is an economics claim; "preserves the decision" is a representation claim. The
+literature often conflates them.
+
+### 11.8 The economics of per-event inference
+
+**Evidence:** **14.5 µs** per file, **0.15 MB** TorchScript model.
+
+**Mechanism:** at that cost the model is negligible relative to file I/O; an LLM
+call is many orders of magnitude more expensive. The architecture question is not
+only "which model is smarter" but "which loop can afford to run always."
+
+**Implication:** a small latent model for the fast path plus a surprise-triggered
+LLM for the slow path is a coherent division of labor. This is not a replacement
+for the LLM; it is a boundary.
+
+---
+
+## 12. Le-Gates as a cross-model pattern
+
+Le-Gates is the recurring mechanism in the author's model experiments. This
+project is another context in which it appears, applied to world-model dynamics
+rather than language-model adapters. Naming it as a pattern makes the transfer
+explicit.
+
+The invariant:
+
+```
+keep an identity path
+add a zero-initialized residual
+learn a scalar gate
+freeze what you want to preserve
+```
+
+| Context | Gated quantity | Gate | Preservation target |
+|---|---|---|---|
+| Earlier behavior-preserving surgery | attention/MLP residual | hard 0/1 gate | old task behavior |
+| Earlier smooth adaptation | attention/MLP residual | sigmoid gate | old capabilities |
+| World-model dynamics (this repo) | dynamics delta | sigmoid gate | old dynamics |
+| Growable latent (this repo) | new observation slot | sigmoid + input scaling | old observation semantics |
+
+For the world model:
+
+```
+z' = z + (1−g)·old(z, a) + g·new(z, a)
+g = sigmoid(gate_logit)
+```
+
+with `old` frozen after domain A and `new` plus the gate trained on domain B.
+
+### Why it generalizes
+
+The problem is not specific to language models or world models. It is
+**distribution shift under a preservation constraint**. The gate turns "change"
+into a measured deviation from an identity path: at `g = 0` the model is exactly
+the old model, and the learned gate reports how much new behavior the data
+actually justified. That is a better diagnostic than a learning-rate change,
+because when the old behavior moves you can see which path did it.
+
+### What it does not do
+
+- **It does not make forgetting zero.** Single-gate dynamics drift was **+169%**
+  on the old domain, better than naive fine-tuning (**+1015%**) but not zero.
+- **It does not solve representability.** The growable observation is a separate
+  move; without it, the gate learns noise.
+- **It does not choose the shift.** Detection is a separate problem. The audit
+  showed that a false shift signal (a "new type" the model could not see) can arm
+  the gate on noise.
+
+### The open question
+
+Can the gate be driven by the surprise signal instead of a hand-written shift
+detector? The reflex already computes a prediction-error spike; the natural next
+experiment is to let that spike set the gate's prior or trigger the freeze/train
+cycle. That would close the loop between the world model's own uncertainty and
+its continual-learning machinery.
+
+---
+
+## 13. Relation to prior work
 
 - **JEPA / H-JEPA** (LeCun; V-JEPA, I-JEPA): predict in latent space, use an EMA
   target and anti-collapse regularizers, and plan over multiple timescales. Proteus
@@ -478,7 +678,7 @@ measurements that failed.
 
 ---
 
-## 12. Availability
+## 14. Availability
 
 Code: MIT. Weights, telemetry, journals, and screenshots: not published, because
 they were collected from the author's personal desktop and used for training.

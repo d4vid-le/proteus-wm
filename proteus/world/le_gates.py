@@ -1,4 +1,4 @@
-"""gates.py — trainable residual gates for continual learning (proteus port).
+"""le_gates.py — Le-Gates: trainable residual gates for continual learning.
 
 From an earlier gated-adapter prototype: gates are nn.Parameter logits, gate = sigmoid(logit),
 applied as residual scalars on a sub-module. This port wraps the H-JEPA macro
@@ -9,7 +9,7 @@ dynamics predictor so a domain shift is learned WITHOUT forgetting the old:
     old_delta frozen after domain A; new_delta + gate_logit train on domain B.
 
 Usage:
-    from proteus.world.gates import GatedDynamics, build_gated
+    from proteus.world.le_gates import GatedDynamics, build_gated
     model = build_gated()                      # wraps pred_macro with gates
     model.pred_macro.freeze_old()              # after domain A
     # train domain B: optimizer over new.parameters() + gate_logit

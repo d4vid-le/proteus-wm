@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""growable.py — Proteus Gates on a GROWABLE world model: new file types enter the
+"""growable.py — Le-Gates on a GROWABLE world model: new file types enter the
 observation, the model grows a gated new-path, and learns them WITHOUT forgetting.
 
 The honest gap from the audit: a fixed 12-dim obs can't encode a new file type,
@@ -10,7 +10,7 @@ so gates fired on nothing. This fixes that:
 
 Model: the macro encoder is a per-type embedding; when a new type appears, a NEW
 gated embedding slot is added (identity init -> old behavior unchanged), and only
-that slot + its gate train. Old types' embeddings are frozen. This is Proteus Gates on
+that slot + its gate train. Old types' embeddings are frozen. This is Le-Gates on
 the INPUT side: each type is its own gated path.
 
 Tests:
@@ -235,7 +235,7 @@ def macro_mse(model, samples, obs_dim):
 
 def main():
     print("=" * 70)
-    print("GROWABLE Proteus Gates — new file types actually enter the world")
+    print("GROWABLE Le-Gates — new file types actually enter the world")
     print("=" * 70)
 
     # Phase A: base world (txt/jpg/pdf), no extras

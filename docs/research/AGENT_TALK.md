@@ -138,7 +138,7 @@ The blocker is **not a bug** — the code already logs obs+latent:
 - `autonomous.py` (line ~475) passes `obs=vec.tolist(), latent=latent` on every
   `verified_action`. The 12,462 journal rows on disk are **pre-patch/backfill**
   (0 obs); the current code is correct.
-- Ran one real single-pass cleanup (gated/Proteus Gates checkpoint): **40 acts / 40
+- Ran one real single-pass cleanup (gated/Le-Gates checkpoint): **40 acts / 40
   verified, 1 shift detected, 13 continual-learning updates**. The journal rows
   carried a **12-dim `obs` + 64-dim `latent`** → **PASS**.
 - To make the grounded `surprise` voice fire, just run the live agent so new rows
@@ -160,11 +160,11 @@ skeleton for generality (and matches where the field's best guesses point:
 world-model-centric, embodied). The current proteus is a strong **M0**.
 
 The thesis: **vision-first JEPA world model = the core (System 1); LLM Qwen =
-the interface (System 2); continual learning (Proteus Gates) + capacity growth (SCG)
+the interface (System 2); continual learning (Le-Gates) + capacity growth (SCG)
 let it keep learning without forgetting; grounded two-way communication is how
 it connects to you.**
 
-- **M0 (done):** vision-first JEPA world model + Proteus Gates continual learning +
+- **M0 (done):** vision-first JEPA world model + Le-Gates continual learning +
   safety barrier (0 violations on KEEP-deletion).
 - **M1 (now):** grounded autonomous two-way communication — `agent_talk.py`
   (surprise + after-action voices), with the P0 requirement: run the live agent
