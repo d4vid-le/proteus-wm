@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proteus-wm"
+version = "0.1.0"
+description = "A JEPA world-model agent that learns continually, verifies against the real world, and bridges to language models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "d4vid-le" }]
+keywords = ["jepa", "world-model", "continual-learning", "agents", "safety"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.24",
+  "torch>=2.2",
+  "torchvision>=0.17",
+  "pillow>=10",
+]
+
+[project.optional-dependencies]
+macos = [
+  "pyobjc-framework-Quartz>=10",
+  "pyobjc-framework-Cocoa>=10",
+]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/d4vid-le/proteus-wm"
+Repository = "https://github.com/d4vid-le/proteus-wm"
+
+[tool.setuptools.packages.find]
+include = ["proteus*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

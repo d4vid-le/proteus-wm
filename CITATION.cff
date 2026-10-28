@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Proteus: a JEPA world-model agent that learns continually"
+abstract: >-
+  A small latent world model with real perception, continual adaptation,
+  a control-barrier-function safety floor, and an MCP bridge to language models.
+authors:
+  - family-names: "d4vid-le"
+    alias: "d4vid-le"
+version: "0.1.0"
+date-released: "2026-10-28"
+license: MIT
+repository-code: "https://github.com/d4vid-le/proteus-wm"
+keywords:
+  - JEPA
+  - world model
+  - continual learning
+  - safety
+  - agents

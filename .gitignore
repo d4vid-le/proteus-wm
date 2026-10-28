@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.venv/
+venv/
+.env
+.env.*
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment and private notes
+.local/
+
+# Runtime state: journals, telemetry, logs, keys
+data/*
+!data/.gitkeep
+*.log
+*.log.*
+*.jsonl
+*.key
+*.pem
+*.cert
+*.bak
+nohup.out
+
+# Trained artifacts: models were trained on private desktop telemetry
+checkpoints/*
+!checkpoints/.gitkeep
+export/*
+!export/.gitkeep
+*.pt
+*.pth
+*.ckpt
+*.npz
+*.safetensors
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
