@@ -6,7 +6,7 @@ The name is deliberate: Proteus is the shape-shifting sea god. The model is
 supposed to change its dynamics as the world changes, without forgetting the
 worlds it already knows.
 
-Proteus is a research prototype of a *System-1* world-model agent. It perceives a
+Proteus is an independent research prototype of a *System-1* world-model agent. It perceives a
 real macOS desktop through native telemetry, predicts state transitions in a
 64-dimensional latent space, plans with model-predictive control, and adapts to
 distribution shift without retraining from scratch. A language model is optional
@@ -22,11 +22,21 @@ experiments that failed.
 Perceive → Encode → Predict → Surprise → Verify → Learn → Act
 ```
 
-> **Status:** research archive, not a product. 15/15 pytest and 19/19 eval checks
-> pass on the author's machine as of October 2026. Trained weights and runtime
-> telemetry are **not** included in this repository (see [Weights and data](#weights-and-data)).
-> This is not AGI; `proteus/eval/not_agi.py` is a falsification suite that
-> demonstrates five capabilities the system lacks.
+> **Status:** independent, experimental research — not a product. 15/15 pytest and
+> 19/19 eval checks pass on the author's machine as of October 2026. Trained weights
+> and runtime telemetry are **not** included in this repository (see
+> [Weights and data](#weights-and-data)). This is not AGI;
+> `proteus/eval/not_agi.py` is a falsification suite that demonstrates five
+> capabilities the system lacks.
+
+### Scope and provenance
+
+This is independent work: one developer, one laptop, no lab, no funding, and no
+peer review. It began as a question — can a small latent world model learn
+continuously on a real machine? — and grew into the system below. It is
+experimental. The scripts are the evidence, and the failures are documented next
+to the results. Read it as a reproducible engineering log, not as a validated
+paper.
 
 ---
 

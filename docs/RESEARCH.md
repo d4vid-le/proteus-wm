@@ -109,6 +109,10 @@ Two environments are used:
 - No external baseline model was run for most tasks. The comparisons are
   internal: naive fine-tuning vs gated adaptation, flat vs hierarchical planning,
   communication vs no communication.
+- **Provenance.** This is independent work by one developer, not a lab study.
+  There was no internal review, funding, or external baseline suite. Weight the
+  evidence accordingly; the scripts and seeds are included so the claims can be
+  checked or falsified.
 
 ---
 
@@ -367,7 +371,8 @@ The vision stack adds image perception, but that is a separate encoder, not the
 
 ## 7. Threats to validity
 
-1. **Single machine, single author, single seed family.** No external replication.
+1. **Single machine, one independent developer, single seed family.** No external
+   replication and no lab review.
 2. **Small controlled worlds.** `CleanupDesktop` is a 6-file world. High success
    rates there do not imply open-world competence.
 3. **Internal baselines only.** Naive fine-tuning, flat planning, and

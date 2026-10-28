@@ -28,4 +28,4 @@ jobs:
       - name: Core tests
         # Vision tests need downloaded encoder weights and macOS capture
         # permissions; they run locally but are excluded from CI.
-        run: pytest tests/test_core.py -q -k "not vision"
+        run: pytest tests/test_core.py tests/test_imports.py -q -k "not vision"
