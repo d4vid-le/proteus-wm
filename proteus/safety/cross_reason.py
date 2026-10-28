@@ -32,7 +32,7 @@ import torch
 import torch.nn as nn
 from PIL import Image, ImageDraw
 
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
 
 
 def build_frozen(device=DEVICE):

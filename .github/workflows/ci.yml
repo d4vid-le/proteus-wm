@@ -9,6 +9,9 @@ on:
 jobs:
   core:
     runs-on: macos-14
+    env:
+      # GitHub's virtualized macOS runners advertise MPS but cannot allocate.
+      PROTEUS_DEVICE: cpu
     strategy:
       matrix:
         python-version: ["3.11"]

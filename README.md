@@ -222,6 +222,9 @@ The MCP server exposes eleven tools: vision energy, world state, surprise, safet
 check, organize, plan, learn, curiosity, daemon status, latent handoff, and intent
 decomposition. See `docs/ARCHITECTURE.md` for the tool contract.
 
+Set `PROTEUS_DEVICE=cpu` to force CPU inference. This is useful on headless
+macOS runners, where MPS may be advertised but cannot allocate.
+
 Some entry points require macOS permissions (Screen Recording, Accessibility,
 Full Disk Access). The filesystem, planning, continual-learning, and vision
 experiments do not.

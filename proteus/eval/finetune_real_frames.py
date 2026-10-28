@@ -31,7 +31,7 @@ from PIL import Image
 
 import proteus.perception.count_head as ch
 import proteus.envs.real_env as real_env
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
 
 
 def capture_listing(root, out_path):

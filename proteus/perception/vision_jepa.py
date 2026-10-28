@@ -38,7 +38,7 @@ from proteus.world.hjepa_torch import HJEPA_K4
 
 OBS_DIM = 12
 ACT_DIM = 4
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
 
 
 def build_frozen_vit(device):

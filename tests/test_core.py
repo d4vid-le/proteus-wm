@@ -24,6 +24,7 @@ import torch
 import pytest
 
 from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
 from proteus.world.le_gates import GatedDynamics, build_gated, predict_macro_gated
 
 
@@ -293,7 +294,7 @@ def test_vision_jepa_frozen_vit():
     from proteus.world.hjepa_torch import HJEPA_K4
     from PIL import Image
     torch.manual_seed(0)
-    dev = "mps" if torch.backends.mps.is_available() else "cpu"
+    dev = DEVICE
     vit, transforms = vj.build_frozen_vit(dev)
     model = HJEPA_K4(obs_dim=12, act_dim=4, hidden=128, z_micro=32, z_macro=64, k=4, pos_dim=12)
     ckpt = pathlib.Path(ROOT / "checkpoints" / "cleanup_hjepa.pt")
@@ -321,12 +322,15 @@ def test_vision_jepa_frozen_vit():
 
 def test_count_head_reads_counts():
     """Vision count head: reads exact counts from pixels (mean abs err < 0.3)."""
+    import random
     import proteus.perception.count_head as ch
     torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
     enc, tr = ch.build_resnet18()
     cv = ch.CountVision(enc, tr).to(ch.DEVICE)
     pairs = ch.collect(n=80, seed=0)
-    ch.train_count(cv, pairs, epochs=50)
+    ch.train_count(cv, pairs, epochs=150)
     errs = []
     for img, vec in ch.collect(n=40, seed=99):
         with torch.no_grad():

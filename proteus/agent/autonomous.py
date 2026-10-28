@@ -39,6 +39,7 @@ import torch
 import proteus.envs.real_env as real_env
 from proteus.world.hjepa_torch import HJEPA_K4
 from proteus.world.le_gates import build_gated, predict_macro_gated
+from proteus.device import DEVICE
 
 # unbuffered stdout so daemon logs stream to files live
 sys.stdout.reconfigure(line_buffering=True)
@@ -60,12 +61,12 @@ class VisionCountRouter:
         import proteus.perception.count_head as ch
         self.ch = ch
         enc, tr = ch.build_resnet18()
-        self.cv = ch.CountVision(enc, tr).to("mps" if torch.backends.mps.is_available() else "cpu")
+        self.cv = ch.CountVision(enc, tr).to(DEVICE)
         # optional: load a finetuned count head if present
         self.finetuned = ROOT / "checkpoints" / "count_head_real.pt"
         if self.finetuned.exists():
             self.cv.load_state_dict(torch.load(self.finetuned, map_location="cpu", weights_only=True))
-            self.cv.to("mps" if torch.backends.mps.is_available() else "cpu")
+            self.cv.to(DEVICE)
             self.cv.eval()
         self.available = True
 

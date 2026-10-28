@@ -22,6 +22,7 @@ import numpy as np
 import torch
 
 from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
 
 OBS_DIM = 12
 ACT_DIM = 4
@@ -70,6 +71,7 @@ def eval_dynamics(model, n=512):
 def eval_planner(model, trials=20):
     import proteus.envs.cleanup_env as cleanup_env
     from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
     succ = 0
     for t in range(trials):
         env = cleanup_env.CleanupDesktop()
@@ -381,6 +383,7 @@ def eval_curiosity(quick=False):
 def eval_barrier(quick=False):
     import proteus.safety.barrier as br
     from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
     model = HJEPA_K4(obs_dim=12, act_dim=4, hidden=128, z_micro=32, z_macro=64, k=4, pos_dim=12)
     ckpt = pathlib.Path(ROOT / "checkpoints" / "cleanup_hjepa.pt")
     if ckpt.exists():
@@ -403,6 +406,7 @@ def eval_latency(quick=False):
     import proteus.eval.latency as lat
     torch.manual_seed(0)
     from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
     model = HJEPA_K4(obs_dim=12, act_dim=4, hidden=128, z_micro=32, z_macro=64, k=4, pos_dim=12)
     ckpt = pathlib.Path(ROOT / "checkpoints" / "cleanup_hjepa.pt")
     if ckpt.exists():
@@ -420,6 +424,7 @@ def eval_latency(quick=False):
 def eval_vision(quick=False):
     import proteus.perception.vision as vis
     from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
     torch.manual_seed(0)
     model = HJEPA_K4(obs_dim=12, act_dim=4, hidden=128, z_micro=32, z_macro=64, k=4, pos_dim=12)
     ckpt = pathlib.Path(ROOT / "checkpoints" / "cleanup_hjepa.pt")
@@ -481,7 +486,8 @@ def eval_vision_jepa(quick=False):
     import proteus.perception.vision_jepa as vj
     import torch
     from proteus.world.hjepa_torch import HJEPA_K4
-    dev = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
+    dev = DEVICE
     torch.manual_seed(0)
     vit, transforms = vj.build_frozen_vit(dev)
     model = HJEPA_K4(obs_dim=12, act_dim=4, hidden=128, z_micro=32, z_macro=64, k=4, pos_dim=12)
@@ -526,6 +532,7 @@ def eval_vision_routing(quick=False):
     """The full JEPA loop: MPC plans on the vision latent (no counts), KEEP safe."""
     import proteus.perception.vision_routing as vr
     from proteus.world.hjepa_torch import HJEPA_K4
+from proteus.device import DEVICE
     if not (ROOT / "checkpoints" / "cleanup_hjepa.pt").exists():
         return {"skipped": True, "note": "base checkpoint not present"}
     torch.manual_seed(0)
@@ -534,7 +541,7 @@ def eval_vision_routing(quick=False):
     if ckpt.exists():
         model.load_state_dict(torch.load(ckpt, map_location="cpu", weights_only=True))
     model.eval()
-    dev = "mps" if torch.backends.mps.is_available() else "cpu"
+    dev = DEVICE
     model.to(dev)
     router = vr.VisionRouter(model, enc_name="resnet18")
     import random
@@ -584,7 +591,7 @@ def eval_count_head(quick=False):
     enc, tr = ch.build_resnet18()
     cv = ch.CountVision(enc, tr).to(ch.DEVICE)
     train_pairs = ch.collect(n=100 if quick else 200, seed=0)
-    ch.train_count(cv, train_pairs, epochs=100)
+    ch.train_count(cv, train_pairs, epochs=150)
     test_pairs = ch.collect(n=60, seed=99)
     errs = []
     for img, vec in test_pairs:

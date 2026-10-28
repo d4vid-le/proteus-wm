@@ -33,7 +33,7 @@ from PIL import Image
 import proteus.envs.real_env as real_env
 from proteus.perception.count_head import CountVision, build_resnet18
 
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
 
 
 def capture_listing(root, out_path):

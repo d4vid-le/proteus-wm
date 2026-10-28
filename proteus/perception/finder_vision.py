@@ -26,7 +26,7 @@ import torch
 import torch.nn as nn
 from PIL import Image
 
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+from proteus.device import DEVICE
 
 
 def get_finder_window():
